@@ -1,20 +1,23 @@
+
 import type { BacktestReport } from '@/types';
 import { DataCard } from '@/components/common/data-card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, CheckCircle, XCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks } from 'lucide-react';
+import { BarChart as BarChartIcon, CheckCircle, XCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks } from 'lucide-react'; // Renamed BarChart to BarChartIcon to avoid conflict
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+} from "@/components/ui/chart";
+import {
   Bar,
   XAxis,
   YAxis,
-  ResponsiveContainer,
+  CartesianGrid,
   BarChart as RechartsBarChart,
-} from "@/components/ui/chart"
+} from 'recharts';
 import { cn } from '@/lib/utils';
 
 interface BacktestingReportDisplayProps {
@@ -45,10 +48,10 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
   ];
 
   const comparisonChartData = comparisonMetrics ? [
-    { 
-      name: "Performance", 
+    {
+      name: "Performance",
       strategyReturn: metrics.averageProfit * metrics.totalTrades * 0.1, // Simplified P&L
-      buyAndHoldReturn: comparisonMetrics.buyAndHoldReturn 
+      buyAndHoldReturn: comparisonMetrics.buyAndHoldReturn
     }
   ] : [];
 
@@ -58,7 +61,7 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
         {aiSummary && (
           <div className="p-4 bg-accent/10 rounded-lg border border-accent">
             <h3 className="text-lg font-semibold text-accent mb-2 flex items-center">
-              <BarChart className="w-5 h-5 mr-2" />
+              <BarChartIcon className="w-5 h-5 mr-2" />
               AI Summary
             </h3>
             <p className="text-sm text-foreground/80 whitespace-pre-line">{aiSummary}</p>
@@ -90,12 +93,12 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
                 <RechartsBarChart data={comparisonChartData} layout="vertical" accessibilityLayer>
                   <CartesianGrid horizontal={false} />
                   <XAxis type="number" dataKey="value" hide />
-                  <YAxis 
-                    dataKey="name" 
-                    type="category" 
-                    tickLine={false} 
-                    axisLine={false} 
-                    hide 
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    tickLine={false}
+                    axisLine={false}
+                    hide
                   />
                   <ChartTooltip
                     cursor={false}
