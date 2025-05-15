@@ -14,7 +14,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from '../ui/skeleton';
 import { ScrollArea } from '../ui/scroll-area';
 
-export function AiStockSelection() {
+interface AiStockSelectionProps {
+  onSelectStockForChart: (ticker: string) => void;
+}
+
+export function AiStockSelection({ onSelectStockForChart }: AiStockSelectionProps) {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +27,7 @@ export function AiStockSelection() {
   const handleFetchSuggestions = useCallback(async (showLoadingIndicator = true) => {
     if (showLoadingIndicator) setIsLoadingSuggestions(true);
     setError(null);
-    if (showLoadingIndicator) setSuggestions([]); // Clear previous suggestions only on full load
+    if (showLoadingIndicator) setSuggestions([]);
 
     try {
       const mockStockData = JSON.stringify([
@@ -32,7 +36,6 @@ export function AiStockSelection() {
         { ticker: 'HDFCBANK', price: 1670, volume: 12000000, rsi: 72, ma5: 1660, ma20: 1630 },
         { ticker: 'NIFTYBEES', price: 230, volume: 1200000, rsi: 55, ma5: 229, ma20: 225 },
         { ticker: 'BANKBEES', price: 450, volume: 800000, rsi: 65, ma5: 448, ma20: 440 },
-
       ]);
       const mockMarketSentiment = "Slightly bullish with moderate volatility expected. Focus on liquid stocks with clear momentum.";
 
@@ -42,8 +45,8 @@ export function AiStockSelection() {
         const aiSuggestions: AISuggestion[] = result.topStocks.map((stock, index) => ({
           id: `${stock.ticker}-${index}-${Date.now()}`,
           ticker: stock.ticker,
-          name: `${stock.ticker} (AI Pick)`, // Name could be fetched from a master list
-          price: parseFloat((Math.random() * 2000 + 200).toFixed(2)), // More realistic initial prices for mock
+          name: `${stock.ticker} (AI Pick)`,
+          price: parseFloat((Math.random() * 2000 + 200).toFixed(2)),
           change: parseFloat(((Math.random() - 0.5) * 30).toFixed(2)),
           changePercent: parseFloat(((Math.random() - 0.5) * 2.5).toFixed(2)),
           volume: `${(Math.random() * 8 + 0.5).toFixed(1)}M`,
@@ -51,7 +54,7 @@ export function AiStockSelection() {
           reasoning: stock.reasoning,
         }));
         setSuggestions(aiSuggestions);
-        if (showLoadingIndicator) { // Only toast on initial fetch, not background refresh
+        if (showLoadingIndicator) {
             toast({
             title: "AI Suggestions Loaded",
             description: `Found ${aiSuggestions.length} potential scalping opportunities.`,
@@ -66,7 +69,7 @@ export function AiStockSelection() {
             variant: "default",
             });
         }
-        setSuggestions([]); // Ensure suggestions are cleared if AI returns none
+        setSuggestions([]);
       }
     } catch (err) {
       console.error("Failed to fetch AI suggestions:", err);
@@ -83,20 +86,16 @@ export function AiStockSelection() {
       if (showLoadingIndicator) setIsLoadingSuggestions(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [toast]); // Removed 'suggestions' from dependencies to prevent re-fetch loop
-
+  }, [toast]); 
 
   useEffect(() => {
-    handleFetchSuggestions(); // Initial fetch
-    const intervalId = setInterval(() => handleFetchSuggestions(false), 30000); // Refresh suggestions every 30s without full load
+    handleFetchSuggestions();
+    const intervalId = setInterval(() => handleFetchSuggestions(false), 30000);
     return () => clearInterval(intervalId);
   }, [handleFetchSuggestions]);
 
-
-  // Effect to simulate real-time updates for AI suggestions' prices
   useEffect(() => {
     if (suggestions.length === 0) return;
-
     const intervalId = setInterval(() => {
       setSuggestions(currentSuggestions =>
         currentSuggestions.map(stock => ({
@@ -104,31 +103,25 @@ export function AiStockSelection() {
           price: parseFloat((stock.price + (Math.random() - 0.5) * (stock.price * 0.001)).toFixed(2)),
           change: parseFloat(((Math.random() - 0.5) * (stock.price * 0.005)).toFixed(2)),
           changePercent: parseFloat(((Math.random() - 0.5) * 0.5).toFixed(2)),
-          volume: `${(parseFloat(stock.volume.replace('M', '')) + (Math.random() - 0.45) * 0.05).toFixed(1)}M` // Subtle volume change
+          volume: `${(parseFloat(stock.volume.replace('M', '')) + (Math.random() - 0.45) * 0.05).toFixed(1)}M`
         }))
       );
-    }, 1500); // Update AI pick prices faster (e.g., every 1.5 seconds)
-
+    }, 1500); 
     return () => clearInterval(intervalId);
-  }, [suggestions.length]); // Rerun if the number of suggestions changes
+  }, [suggestions.length]); 
 
-
-  const handleViewChart = (ticker: string) => {
-    console.log(`View chart for AI suggestion: ${ticker}`);
-    // This would typically interact with a shared chart component or context
-    toast({ title: "Chart View", description: `Displaying chart for ${ticker} (Not fully implemented).`});
+  const handleViewChartInternal = (ticker: string) => {
+    onSelectStockForChart(ticker);
+    toast({ title: "Chart Updated", description: `Displaying chart for ${ticker}.`});
   };
 
   const handleExecuteTrade = async (suggestion: AISuggestion) => {
-    // No need for setIsLoadingSuggestions(true) here, trade execution has its own loading state in StockCard
     try {
       const newTrade: ActiveTrade = await placeMockOrder({ suggestion });
       toast({
         title: "Trade Initiated (Simulated)",
         description: `Mock trade for ${newTrade.ticker} at ₹${newTrade.entryPrice.toFixed(2)} placed. Check 'Active Positions'.`,
       });
-      // TODO: Optionally, trigger a refresh of an "Active Trades" component here or use a state management solution.
-      // For now, ActiveTradesSection polls independently.
     } catch (err) {
       console.error("Failed to execute mock trade:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -137,7 +130,7 @@ export function AiStockSelection() {
         description: errorMessage,
         variant: "destructive",
       });
-      throw err; // Re-throw so StockCard can handle its loading state
+      throw err;
     }
   };
 
@@ -153,8 +146,8 @@ export function AiStockSelection() {
         </Button>
       }
     >
-      <ScrollArea className="h-full pr-2"> {/* Ensure ScrollArea takes full height of its flex-1 parent */}
-        <div className="space-y-3 p-1"> {/* Inner padding for content */}
+      <ScrollArea className="h-full pr-2">
+        <div className="space-y-3 p-1">
             {isLoadingSuggestions && suggestions.length === 0 && (
             Array(3).fill(0).map((_, index) => (
                 <div key={index} className="flex flex-col space-y-2 p-3 border rounded-lg bg-card">
@@ -176,7 +169,7 @@ export function AiStockSelection() {
             )}
             {!isLoadingSuggestions && !error && suggestions.length > 0 && (
             suggestions.map((stock) => (
-                <StockCard key={stock.id} stock={stock} onViewChart={handleViewChart} onExecuteTrade={handleExecuteTrade} />
+                <StockCard key={stock.id} stock={stock} onViewChart={handleViewChartInternal} onExecuteTrade={handleExecuteTrade} />
             ))
             )}
             {!isLoadingSuggestions && !error && suggestions.length === 0 && (

@@ -26,7 +26,7 @@ import {
 
 interface StockCardProps {
   stock: StockInfo | AISuggestion;
-  onViewChart?: (ticker: string) => void;
+  onViewChart?: (ticker: string) => void; // Changed to accept ticker
   onExecuteTrade?: (suggestion: AISuggestion) => Promise<void>;
 }
 
@@ -40,12 +40,16 @@ export function StockCard({ stock, onViewChart, onExecuteTrade }: StockCardProps
     setIsExecuting(true);
     try {
       await onExecuteTrade(stock as AISuggestion);
-      // Toast feedback is handled by the calling component (AiStockSelection)
     } catch (error) {
-      // Error toast also handled by parent
       console.error("Error during trade execution from StockCard:", error)
     } finally {
       setIsExecuting(false);
+    }
+  };
+
+  const handleViewChartClick = () => {
+    if (onViewChart) {
+      onViewChart(stock.ticker);
     }
   };
 
@@ -99,7 +103,7 @@ export function StockCard({ stock, onViewChart, onExecuteTrade }: StockCardProps
       </CardContent>
       <CardFooter className="flex flex-col gap-1.5 px-3 pt-0 pb-3">
         {onViewChart && (
-          <Button variant="outline" size="sm" className="w-full text-xs h-8" onClick={() => onViewChart(stock.ticker)}>
+          <Button variant="outline" size="sm" className="w-full text-xs h-8" onClick={handleViewChartClick}>
             <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
             View Chart
           </Button>
