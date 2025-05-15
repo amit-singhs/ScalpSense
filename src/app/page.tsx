@@ -24,25 +24,34 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6">
-      <h1 className="text-3xl font-bold tracking-tight text-primary">ScalpSense Dashboard</h1>
+    <div className="flex flex-col gap-6 p-4 md:p-6 h-full"> {/* Added h-full */}
+      <h1 className="text-3xl font-bold tracking-tight text-primary shrink-0">ScalpSense Dashboard</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Grid container takes remaining vertical space */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+        
         {/* Main content area - Chart and Live Market Scan */}
-        <div className="lg:col-span-2 space-y-6">
-          <InteractiveChartSection stockTickerToDisplay={selectedChartTicker} />
-          <LiveMarketScan onSelectStockForChart={handleSelectStockForChart} />
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Chart section takes most of the space in this column */}
+          <div className="flex-1 min-h-0">
+            <InteractiveChartSection stockTickerToDisplay={selectedChartTicker} />
+          </div>
+          {/* Live market scan takes its natural height below the chart */}
+          <div>
+            <LiveMarketScan onSelectStockForChart={handleSelectStockForChart} />
+          </div>
         </div>
         
         {/* Sidebar-like area - AI Picks, Active Trades, Trade History */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="h-[320px] xl:h-[350px]"> {/* Container for AiStockSelection */}
+        <div className="lg:col-span-1 flex flex-col gap-6">
+          {/* Each card in this column shares space equally and scrolls internally */}
+          <div className="flex-1 min-h-0">
             <AiStockSelection onSelectStockForChart={handleSelectStockForChart} onTradePlaced={triggerActiveTradesRefresh} />
           </div>
-          <div className="h-[320px] xl:h-[350px]"> {/* Container for ActiveTradesSection */}
+          <div className="flex-1 min-h-0">
             <ActiveTradesSection refreshKey={activeTradesRefreshKey} />
           </div>
-          <div className="h-[300px] xl:h-[360px]"> {/* Slightly increased height for TradeHistorySection */}
+          <div className="flex-1 min-h-0">
              <TradeHistorySection />
           </div>
         </div>
