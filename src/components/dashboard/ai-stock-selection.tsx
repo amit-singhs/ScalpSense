@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { AISuggestion } from '@/types';
@@ -5,7 +6,7 @@ import { DataCard } from '@/components/common/data-card';
 import { StockCard } from './stock-card';
 import { Button } from '@/components/ui/button';
 import { Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAIScalpingSuggestions } from '@/actions/market';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -22,7 +23,6 @@ export function AiStockSelection() {
     setError(null);
     setSuggestions([]); // Clear previous suggestions
     try {
-      // Mock data for the AI flow input
       const mockStockData = JSON.stringify([
         { ticker: 'RELIANCE', price: 2850, volume: 5000000, rsi: 60, ma5: 2840, ma20: 2800 },
         { ticker: 'TCS', price: 3800, volume: 1800000, rsi: 45, ma5: 3810, ma20: 3820 },
@@ -34,20 +34,20 @@ export function AiStockSelection() {
       
       if (result && result.topStocks) {
         const aiSuggestions: AISuggestion[] = result.topStocks.map((stock, index) => ({
-          id: stock.ticker + index,
+          id: stock.ticker + index + Date.now(), // Ensure unique ID
           ticker: stock.ticker,
-          name: `${stock.ticker} (AI Suggestion)`, // Placeholder name
-          price: Math.random() * 3000 + 500, // Placeholder price
-          change: (Math.random() - 0.5) * 50, // Placeholder change
-          changePercent: (Math.random() - 0.5) * 3, // Placeholder change percent
-          volume: `${(Math.random() * 10).toFixed(1)}M`, // Placeholder volume
+          name: `${stock.ticker} (AI Suggestion)`,
+          price: Math.random() * 3000 + 500, 
+          change: (Math.random() - 0.5) * 50,
+          changePercent: (Math.random() - 0.5) * 3,
+          volume: `${(Math.random() * 10).toFixed(1)}M`,
           scalpingScore: stock.scalpingScore,
           reasoning: stock.reasoning,
         }));
         setSuggestions(aiSuggestions);
         toast({
           title: "AI Suggestions Loaded",
-          description: `Found ${aiSuggestions.length} potential scalping opportunities.`,
+          description: `Found ${aiSuggestions.length} potential scalping opportunities. Data will simulate real-time updates.`,
         });
       } else {
         setError("AI did not return valid suggestions.");
@@ -71,6 +71,28 @@ export function AiStockSelection() {
     }
   };
 
+  // Effect to simulate real-time updates for AI suggestions
+  useEffect(() => {
+    if (suggestions.length === 0) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setSuggestions(currentSuggestions =>
+        currentSuggestions.map(stock => ({
+          ...stock,
+          price: parseFloat((stock.price + (Math.random() - 0.5) * (stock.price * 0.005)).toFixed(2)), // Smaller, more frequent changes
+          change: parseFloat(((Math.random() - 0.5) * (stock.price * 0.01)).toFixed(2)),
+          changePercent: parseFloat(((Math.random() - 0.5) * 1).toFixed(2)),
+          volume: `${(parseFloat(stock.volume.replace('M', '')) + (Math.random() - 0.5) * 0.1).toFixed(1)}M`
+        }))
+      );
+    }, 3000); // Update AI pick prices every 3 seconds
+
+    return () => clearInterval(intervalId);
+  }, [suggestions.length]); // Re-run if the number of suggestions changes (e.g., new fetch)
+
+
   const handleViewChart = (ticker: string) => {
     console.log(`View chart for AI suggestion: ${ticker}`);
     alert(`Chart view for ${ticker} (not implemented in this component).`);
@@ -79,7 +101,7 @@ export function AiStockSelection() {
   return (
     <DataCard
       title="AI Scalping Picks"
-      description="AI-driven suggestions for potential scalping opportunities."
+      description="AI-driven suggestions for potential scalping opportunities (simulated real-time data)."
       className="h-full flex flex-col"
       headerActions={
         <Button onClick={handleFetchSuggestions} disabled={isLoading}>

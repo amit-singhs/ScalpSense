@@ -1,14 +1,15 @@
+
 "use client";
 
 import type { StockInfo } from '@/types';
 import { DataCard } from '@/components/common/data-card';
 import { StockCard } from './stock-card';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '../ui/button';
 import { RefreshCw } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 
-const mockStocks: StockInfo[] = [
+const initialMockStocks: StockInfo[] = [
   { id: '1', ticker: 'RELIANCE', name: 'Reliance Industries Ltd', price: 2850.75, change: 15.20, changePercent: 0.53, volume: '5.2M' },
   { id: '2', ticker: 'TCS', name: 'Tata Consultancy Services Ltd', price: 3805.10, change: -8.55, changePercent: -0.22, volume: '1.8M' },
   { id: '3', ticker: 'HDFCBANK', name: 'HDFC Bank Ltd', price: 1670.40, change: 22.90, changePercent: 1.39, volume: '12.1M' },
@@ -19,25 +20,39 @@ export function LiveMarketScan() {
   const [stocks, setStocks] = useState<StockInfo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchStocks = () => {
+  const fetchStocks = useCallback(() => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
       // Add small random changes to prices for refresh effect
-      const updatedStocks = mockStocks.map(stock => ({
+      const updatedStocks = stocks.length > 0 ? stocks.map(stock => ({
         ...stock,
-        price: parseFloat((stock.price + (Math.random() - 0.5) * 10).toFixed(2)),
-        change: parseFloat(((Math.random() - 0.5) * 20).toFixed(2)),
+        price: parseFloat((stock.price + (Math.random() - 0.5) * (stock.price * 0.01)).toFixed(2)), // Up to 1% change
+        change: parseFloat(((Math.random() - 0.5) * (stock.price * 0.02)).toFixed(2)), // Up to 2% change value
+        changePercent: parseFloat(((Math.random() - 0.5) * 2).toFixed(2)),
+        volume: `${(parseFloat(stock.volume.replace('M', '')) + (Math.random() - 0.5) * 0.5).toFixed(1)}M`
+      })) : initialMockStocks.map(stock => ({ // Initialize if stocks is empty
+        ...stock,
+        price: parseFloat((stock.price + (Math.random() - 0.5) * (stock.price * 0.01)).toFixed(2)),
+        change: parseFloat(((Math.random() - 0.5) * (stock.price * 0.02)).toFixed(2)),
         changePercent: parseFloat(((Math.random() - 0.5) * 2).toFixed(2)),
       }));
       setStocks(updatedStocks);
       setLoading(false);
-    }, 1000);
-  };
+    }, 500); // Shorter delay for individual fetch
+  }, [stocks]); // Depend on stocks to use their current values for updates
 
   useEffect(() => {
+    fetchStocks(); // Initial fetch
+    const intervalId = setInterval(fetchStocks, 5000); // Refresh every 5 seconds
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [fetchStocks]); // fetchStocks is now memoized with useCallback
+
+  const handleManualRefresh = () => {
+    // Clear existing stocks to ensure loading state shows for manual refresh too
+    // or simply call fetchStocks which will set loading true
     fetchStocks();
-  }, []);
+  }
 
   const handleViewChart = (ticker: string) => {
     // In a real app, this would likely update a global state or a shared chart component
@@ -48,15 +63,15 @@ export function LiveMarketScan() {
   return (
     <DataCard
       title="Live Market Movers"
-      description="Top moving stocks in the current market session."
+      description="Top moving stocks in the current market session (simulated real-time data)."
       headerActions={
-        <Button variant="ghost" size="sm" onClick={fetchStocks} disabled={loading}>
+        <Button variant="ghost" size="sm" onClick={handleManualRefresh} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       }
     >
-      {loading ? (
+      {loading && stocks.length === 0 ? ( // Show skeletons only on initial load or if stocks are cleared
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {Array(4).fill(0).map((_, index) => (
             <div key={index} className="flex flex-col space-y-3 p-4 border rounded-lg">
