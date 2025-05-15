@@ -1,3 +1,4 @@
+
 export interface StockInfo {
   id: string;
   ticker: string;
@@ -38,4 +39,24 @@ export interface BacktestReport {
     profit: number;
     timestamp: string;
   }[];
+}
+
+export enum TradeStatus {
+  PENDING_ENTRY = "PENDING_ENTRY",
+  OPEN = "OPEN",
+  PENDING_EXIT = "PENDING_EXIT",
+  CLOSED = "CLOSED",
+  CANCELLED = "CANCELLED",
+  ERROR = "ERROR",
+}
+
+export interface ActiveTrade extends AISuggestion {
+  tradeId: string;
+  entryPrice: number;
+  quantity: number; // Mock quantity
+  status: TradeStatus;
+  openedAt: string; // ISO string
+  closedAt?: string; // ISO string
+  exitPrice?: number;
+  profitOrLoss?: number;
 }
