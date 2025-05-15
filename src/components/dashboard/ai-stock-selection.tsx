@@ -153,8 +153,8 @@ export function AiStockSelection() {
         </Button>
       }
     >
-      <ScrollArea className="flex-grow pr-2"> {/* Added pr-2 for scrollbar */}
-        <div className="space-y-3 p-1">
+      <ScrollArea className="h-full pr-2"> {/* Ensure ScrollArea takes full height of its flex-1 parent */}
+        <div className="space-y-3 p-1"> {/* Inner padding for content */}
             {isLoadingSuggestions && suggestions.length === 0 && (
             Array(3).fill(0).map((_, index) => (
                 <div key={index} className="flex flex-col space-y-2 p-3 border rounded-lg bg-card">

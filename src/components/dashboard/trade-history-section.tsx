@@ -51,7 +51,7 @@ export function TradeHistorySection() {
         </Button>
       }
     >
-      <div className="flex-grow">
+      <div className="flex-1 flex flex-col overflow-hidden"> {/* Parent for ScrollArea to be h-full */}
         {isLoading && closedTrades.length === 0 && (
            <div className="space-y-1 p-1">
             <Skeleton className="h-8 w-full mb-1" />
@@ -81,7 +81,7 @@ export function TradeHistorySection() {
         )}
 
         {!isLoading && !error && closedTrades.length > 0 && (
-          <ScrollArea className="h-[250px] md:h-[300px]"> {/* Adjust height as needed */}
+          <ScrollArea className="h-full"> {/* Table itself will scroll if content overflows ScrollArea */}
             <Table>
               <TableCaption className="text-xs py-2">A list of your recent simulated trades.</TableCaption>
               <TableHeader>

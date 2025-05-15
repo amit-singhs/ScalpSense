@@ -12,8 +12,14 @@ interface DataCardProps {
 }
 
 export function DataCard({ title, description, children, className, titleClassName, headerActions }: DataCardProps) {
+  // Check if the DataCard is intended to be a flex column that fills height
+  const isVerticalFlexFill = className?.includes('h-full') && className?.includes('flex-col');
+
   return (
-    <Card className={cn("shadow-md hover:shadow-lg transition-shadow duration-300", className)}>
+    <Card className={cn(
+      "shadow-md hover:shadow-lg transition-shadow duration-300",
+      className // User-provided classes, e.g., "h-full flex flex-col"
+    )}>
       <CardHeader>
         <div className="flex justify-between items-start gap-4">
           <div>
@@ -23,7 +29,12 @@ export function DataCard({ title, description, children, className, titleClassNa
           {headerActions && <div className="ml-auto flex-shrink-0">{headerActions}</div>}
         </div>
       </CardHeader>
-      <CardContent>{children}</CardContent>
+      <CardContent className={cn(
+        "p-6 pt-0", // Default padding from ShadCN
+        isVerticalFlexFill ? "flex-1 overflow-hidden" : "" // Allows child (e.g. ScrollArea with h-full) to take space
+      )}>
+        {children}
+      </CardContent>
     </Card>
   );
 }

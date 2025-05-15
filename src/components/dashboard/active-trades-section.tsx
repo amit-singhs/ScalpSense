@@ -168,8 +168,8 @@ export function ActiveTradesSection() {
         </Button>
       }
     >
-      <ScrollArea className="flex-grow pr-2"> {/* Added pr-2 for scrollbar */}
-        <div className="space-y-3 p-1">
+      <ScrollArea className="h-full pr-2"> {/* Ensure ScrollArea takes full height */}
+        <div className="space-y-3 p-1"> {/* Inner padding for content */}
           {isLoading && activeTrades.length === 0 && (
             Array(2).fill(0).map((_, index) => (
               <div key={index} className="p-3 border rounded-lg shadow-sm bg-card space-y-1.5">
@@ -188,7 +188,7 @@ export function ActiveTradesSection() {
             </Alert>
           )}
           {!isLoading && !error && activeTrades.length === 0 && (
-            <div className="text-center py-10 text-muted-foreground">
+            <div className="text-center py-10 text-muted-foreground h-full flex flex-col justify-center items-center">
               <Briefcase className="w-10 h-10 mx-auto opacity-50" />
               <p className="mt-2 text-sm">No active trades.</p>
               <p className="text-xs">Initiate trades from 'AI Scalping Picks'.</p>
