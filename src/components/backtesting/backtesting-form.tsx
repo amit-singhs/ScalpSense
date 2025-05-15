@@ -1,3 +1,4 @@
+
 "use client";
 
 import { DataCard } from '@/components/common/data-card';
@@ -23,7 +24,7 @@ interface BacktestFormInput {
 }
 
 const availableStocks = ["NIFTY50", "RELIANCE", "TCS", "HDFCBANK", "INFY"];
-const availableStrategies = ["AI_SCALPING_V1", "MA_CROSSOVER", "RSI_EXTREME"];
+const availableStrategies = ["AI_SCALPING_V1", "MA_CROSSOVER", "RSI_EXTREME", "GENERAL_TREND_FOLLOWING"];
 
 export function BacktestingForm() {
   const { register, handleSubmit, formState: { errors } } = useForm<BacktestFormInput>({
@@ -44,37 +45,67 @@ export function BacktestingForm() {
     setError(null);
     setReport(null);
     try {
-      // In a real app, data from the form (data.stockTicker, data.strategy, etc.) would be used.
-      // For now, we pass a simplified mock report structure to the AI.
-      const mockBacktestingReport = `
-        Strategy: ${data.strategy}
-        Stock: ${data.stockTicker}
-        Period: ${data.startDate} to ${data.endDate}
-        Total Trades: 150
-        Win Rate: 65%
-        Average Profit per Trade: 0.8%
-        Max Drawdown: -12%
-        Sharpe Ratio: 1.2
-        Profit Factor: 1.8
-        Compared to Buy & Hold: Strategy outperformed by 15% annually.
-      `;
-      
-      const result = await runBacktestAndSummarize({ report: mockBacktestingReport });
-      
-      // Construct a more detailed mock report for display based on AI summary and form inputs
-      const displayReport: BacktestReport = {
-        strategyName: data.strategy,
-        period: `${data.startDate} to ${data.endDate} on ${data.stockTicker}`,
-        metrics: { // These would come from actual backtesting engine
+      let mockBacktestingReport: string;
+      let displayReportMetrics: BacktestReport['metrics'];
+
+      if (data.strategy === "GENERAL_TREND_FOLLOWING") {
+        mockBacktestingReport = `
+          Strategy: ${data.strategy}
+          Stock: ${data.stockTicker}
+          Period: ${data.startDate} to ${data.endDate}
+          Total Trades: 75
+          Win Rate: 55%
+          Average Profit per Trade: 2.5%
+          Max Drawdown: -18%
+          Sharpe Ratio: 0.9
+          Profit Factor: 1.5
+          Average Holding Period: 15 days
+          Number of Long Trades: 40
+          Number of Short Trades: 35
+          Performance during Bull Market: +25%
+          Performance during Bear Market: -5%
+          Compared to Buy & Hold: Strategy underperformed by 5% annually.
+        `;
+        displayReportMetrics = {
+          winRate: 55,
+          averageProfit: 2.5,
+          maxDrawdown: 18,
+          sharpeRatio: 0.9,
+          totalTrades: 75,
+          profitFactor: 1.5,
+          averageHoldingPeriodDays: 15,
+        };
+      } else { // Existing scalping/other strategies
+        mockBacktestingReport = `
+          Strategy: ${data.strategy}
+          Stock: ${data.stockTicker}
+          Period: ${data.startDate} to ${data.endDate}
+          Total Trades: 150
+          Win Rate: 65%
+          Average Profit per Trade: 0.8%
+          Max Drawdown: -12%
+          Sharpe Ratio: 1.2
+          Profit Factor: 1.8
+          Compared to Buy & Hold: Strategy outperformed by 15% annually.
+        `;
+        displayReportMetrics = {
           winRate: 65,
           averageProfit: 0.8,
           maxDrawdown: 12,
           sharpeRatio: 1.2,
           totalTrades: 150,
           profitFactor: 1.8,
-        },
-        comparisonMetrics: {
-          buyAndHoldReturn: 20, // Example
+        };
+      }
+      
+      const result = await runBacktestAndSummarize({ report: mockBacktestingReport });
+      
+      const displayReport: BacktestReport = {
+        strategyName: data.strategy,
+        period: `${data.startDate} to ${data.endDate} on ${data.stockTicker}`,
+        metrics: displayReportMetrics,
+        comparisonMetrics: { // These would come from actual backtesting engine; simplified here
+          buyAndHoldReturn: data.strategy === "GENERAL_TREND_FOLLOWING" ? 10 : 20, 
         },
         aiSummary: result.summary,
       };

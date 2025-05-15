@@ -18,11 +18,12 @@ export interface AISuggestion extends StockInfo {
 
 export interface BacktestMetrics {
   winRate: number;
-  averageProfit: number;
+  averageProfit: number; // Per trade
   maxDrawdown: number;
   sharpeRatio: number;
   totalTrades: number;
   profitFactor: number;
+  averageHoldingPeriodDays?: number; // New metric for general strategies
 }
 
 export interface BacktestReport {

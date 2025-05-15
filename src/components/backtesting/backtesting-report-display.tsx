@@ -3,7 +3,7 @@ import type { BacktestReport } from '@/types';
 import { DataCard } from '@/components/common/data-card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart as BarChartIcon, CheckCircle, XCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks } from 'lucide-react'; 
+import { BarChart as BarChartIcon, CheckCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks, Clock } from 'lucide-react'; 
 import {
   ChartContainer,
   ChartTooltip,
@@ -16,7 +16,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  BarChart as RechartsBarChart, // Renamed to avoid conflict with lucide icon
+  BarChart as RechartsBarChart,
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +46,17 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
     { name: "Profit Factor", value: metrics.profitFactor, unit: "", icon: TrendingUp, color: "text-green-600" },
     { name: "Total Trades", value: metrics.totalTrades, unit: "", icon: ListChecks, color: "text-gray-500" },
   ];
+
+  if (metrics.averageHoldingPeriodDays !== undefined) {
+    performanceData.push({
+      name: "Avg. Hold (Days)",
+      value: metrics.averageHoldingPeriodDays,
+      unit: "",
+      icon: Clock,
+      color: "text-sky-600" // Example color
+    });
+  }
+
 
   const comparisonChartData = comparisonMetrics ? [
     {
@@ -99,7 +110,6 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
                     type="category"
                     tickLine={false}
                     axisLine={false}
-                    // hide // Temporarily unhiding for debugging
                   />
                   <ChartTooltip
                     cursor={{fill: 'hsl(var(--muted))', radius: 4}}
