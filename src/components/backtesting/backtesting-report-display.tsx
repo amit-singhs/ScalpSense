@@ -3,7 +3,7 @@ import type { BacktestReport } from '@/types';
 import { DataCard } from '@/components/common/data-card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart as BarChartIcon, CheckCircle, XCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks } from 'lucide-react'; // Renamed BarChart to BarChartIcon to avoid conflict
+import { BarChart as BarChartIcon, CheckCircle, XCircle, Percent, TrendingUp, TrendingDown, Target, ListChecks } from 'lucide-react'; 
 import {
   ChartContainer,
   ChartTooltip,
@@ -16,7 +16,7 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  BarChart as RechartsBarChart,
+  BarChart as RechartsBarChart, // Renamed to avoid conflict with lucide icon
 } from 'recharts';
 import { cn } from '@/lib/utils';
 
@@ -50,7 +50,8 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
   const comparisonChartData = comparisonMetrics ? [
     {
       name: "Performance",
-      strategyReturn: metrics.averageProfit * metrics.totalTrades * 0.1, // Simplified P&L
+      // Simplified P&L for strategy illustration. Real value would come from backtest engine.
+      strategyReturn: metrics.totalTrades > 0 ? (metrics.averageProfit / 100) * metrics.totalTrades * (metrics.winRate / 100) * 1000 : 0, // Example P&L factor
       buyAndHoldReturn: comparisonMetrics.buyAndHoldReturn
     }
   ] : [];
@@ -88,59 +89,33 @@ export function BacktestingReportDisplay({ report }: BacktestingReportDisplayPro
         {comparisonMetrics && comparisonChartData.length > 0 && (
           <div>
             <h3 className="text-lg font-semibold mb-2">Performance vs. Buy & Hold (Illustrative)</h3>
-            <div className="h-[200px] aspect-video">
+            <div className="w-full h-[200px]"> {/* Ensure consistent height */}
               <ChartContainer config={chartConfig} className="w-full h-full">
-                <RechartsBarChart data={comparisonChartData} layout="vertical" accessibilityLayer>
-                  <CartesianGrid horizontal={false} />
-                  <XAxis type="number" dataKey="value" hide />
+                <RechartsBarChart data={comparisonChartData} layout="vertical" accessibilityLayer barCategoryGap="20%">
+                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                  <XAxis type="number" />
                   <YAxis
                     dataKey="name"
                     type="category"
                     tickLine={false}
                     axisLine={false}
-                    hide
+                    // hide // Temporarily unhiding for debugging
                   />
                   <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
+                    cursor={{fill: 'hsl(var(--muted))', radius: 4}}
+                    content={<ChartTooltipContent />} 
                   />
                   <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="strategyReturn" fill="var(--color-strategyReturn)" radius={4} />
-                  <Bar dataKey="buyAndHoldReturn" fill="var(--color-buyAndHoldReturn)" radius={4} />
+                  <Bar dataKey="strategyReturn" fill="var(--color-strategyReturn)" radius={4} name="Strategy" />
+                  <Bar dataKey="buyAndHoldReturn" fill="var(--color-buyAndHoldReturn)" radius={4} name="Buy & Hold" />
                 </RechartsBarChart>
               </ChartContainer>
             </div>
             <p className="text-xs text-center text-muted-foreground mt-2">
-              Illustrative comparison. Strategy Return is a simplified calculation for demonstration.
+              Illustrative comparison. Strategy Return is a simplified calculation.
             </p>
           </div>
         )}
-
-        {/* Placeholder for detailed trades table if needed */}
-        {/* <details>
-          <summary className="text-md font-semibold cursor-pointer hover:text-primary">View Detailed Trades (Mock)</summary>
-          <Table className="mt-2">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Entry Price</TableHead>
-                <TableHead>Exit Price</TableHead>
-                <TableHead>Profit (%)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow>
-                <TableCell>100.00</TableCell>
-                <TableCell>101.50</TableCell>
-                <TableCell className="text-success">+1.50%</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>102.00</TableCell>
-                <TableCell>101.20</TableCell>
-                <TableCell className="text-destructive">-0.78%</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </details> */}
       </div>
     </DataCard>
   );

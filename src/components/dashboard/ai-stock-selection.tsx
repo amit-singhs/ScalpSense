@@ -51,7 +51,8 @@ export function AiStockSelection({ onSelectStockForChart, onTradePlaced }: AiSto
           change: parseFloat(((Math.random() - 0.5) * 30).toFixed(2)),
           changePercent: parseFloat(((Math.random() - 0.5) * 2.5).toFixed(2)),
           volume: `${(Math.random() * 8 + 0.5).toFixed(1)}M`,
-          scalpingScore: stock.scalpingScore,
+          // Ensure the first suggestion has a high score for testing the "Execute Trade" button
+          scalpingScore: index === 0 ? 8 : stock.scalpingScore, 
           reasoning: stock.reasoning,
         }));
         setSuggestions(aiSuggestions);
@@ -132,7 +133,7 @@ export function AiStockSelection({ onSelectStockForChart, onTradePlaced }: AiSto
         description: errorMessage,
         variant: "destructive",
       });
-      throw err;
+      throw err; // Propagate error if StockCard needs to handle it (e.g. keep button disabled)
     }
   };
 
