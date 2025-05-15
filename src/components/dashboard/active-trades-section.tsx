@@ -102,15 +102,18 @@ function TradeCard({ trade, onCloseTrade, onPriceUpdate }: { trade: ActiveTrade;
   );
 }
 
+interface ActiveTradesSectionProps {
+  refreshKey?: number;
+}
 
-export function ActiveTradesSection() {
+export function ActiveTradesSection({ refreshKey }: ActiveTradesSectionProps) {
   const [activeTrades, setActiveTrades] = useState<ActiveTrade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchActiveTrades = useCallback(async (showLoading = true) => {
-    if(showLoading) setIsLoading(true);
+  const fetchActiveTrades = useCallback(async (showLoadingSpinner = true) => {
+    if(showLoadingSpinner) setIsLoading(true);
     setError(null);
     try {
       const trades = await getMockActiveTrades();
@@ -120,15 +123,15 @@ export function ActiveTradesSection() {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
       setError(errorMessage);
     } finally {
-      if(showLoading) setIsLoading(false);
+      if(showLoadingSpinner) setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchActiveTrades();
-    const intervalId = setInterval(() => fetchActiveTrades(false), 5000); // Refresh active trades list every 5s (e.g. new trades)
+    fetchActiveTrades(true); // Initial fetch with loading spinner
+    const intervalId = setInterval(() => fetchActiveTrades(false), 5000); // Refresh active trades list every 5s without full loading spinner
     return () => clearInterval(intervalId);
-  }, [fetchActiveTrades]);
+  }, [fetchActiveTrades, refreshKey]); // Added refreshKey to dependencies
 
   const handlePriceUpdate = useCallback((tradeId: string, newPrice: number) => {
     setActiveTrades(prevTrades => 

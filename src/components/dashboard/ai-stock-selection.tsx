@@ -16,9 +16,10 @@ import { ScrollArea } from '../ui/scroll-area';
 
 interface AiStockSelectionProps {
   onSelectStockForChart: (ticker: string) => void;
+  onTradePlaced?: () => void;
 }
 
-export function AiStockSelection({ onSelectStockForChart }: AiStockSelectionProps) {
+export function AiStockSelection({ onSelectStockForChart, onTradePlaced }: AiStockSelectionProps) {
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +123,7 @@ export function AiStockSelection({ onSelectStockForChart }: AiStockSelectionProp
         title: "Trade Initiated (Simulated)",
         description: `Mock trade for ${newTrade.ticker} at ₹${newTrade.entryPrice.toFixed(2)} placed. Check 'Active Positions'.`,
       });
+      onTradePlaced?.(); // Trigger refresh in ActiveTradesSection
     } catch (err) {
       console.error("Failed to execute mock trade:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";

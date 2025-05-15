@@ -13,9 +13,14 @@ const DEFAULT_CHART_TICKER = 'NIFTY50';
 
 export default function DashboardPage() {
   const [selectedChartTicker, setSelectedChartTicker] = useState<string>(DEFAULT_CHART_TICKER);
+  const [activeTradesRefreshKey, setActiveTradesRefreshKey] = useState(0);
 
   const handleSelectStockForChart = (ticker: string) => {
     setSelectedChartTicker(ticker);
+  };
+
+  const triggerActiveTradesRefresh = () => {
+    setActiveTradesRefreshKey(prev => prev + 1);
   };
 
   return (
@@ -32,10 +37,10 @@ export default function DashboardPage() {
         {/* Sidebar-like area - AI Picks, Active Trades, Trade History */}
         <div className="lg:col-span-1 space-y-6">
           <div className="h-[320px] xl:h-[350px]"> {/* Container for AiStockSelection */}
-            <AiStockSelection onSelectStockForChart={handleSelectStockForChart} />
+            <AiStockSelection onSelectStockForChart={handleSelectStockForChart} onTradePlaced={triggerActiveTradesRefresh} />
           </div>
           <div className="h-[320px] xl:h-[350px]"> {/* Container for ActiveTradesSection */}
-            <ActiveTradesSection />
+            <ActiveTradesSection refreshKey={activeTradesRefreshKey} />
           </div>
           <div className="h-[300px] xl:h-[360px]"> {/* Slightly increased height for TradeHistorySection */}
              <TradeHistorySection />
